@@ -13,7 +13,10 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"os"
+	"os/exec"
 	"strings"
+	"time"
 )
 
 var defaultUA = "fsgo/gomodule"
@@ -24,21 +27,56 @@ var _ Module = (*GoProxy)(nil)
 //
 // https://go.dev/ref/mod#module-proxy
 type GoProxy struct {
+	Client HTTPClient
 	Proxy  string
 	Module string
-	Client HTTPClient
 }
 
 func (m *GoProxy) client() HTTPClient {
 	return client(m.Client)
 }
 
+func (m *GoProxy) getProxy() string {
+	if len(m.Proxy) > 0 {
+		return m.Proxy
+	}
+	return goProxyFromEnv()
+}
+
+const defaultGoProxy = "https://goproxy.cn/"
+
+func goProxyFromEnv() string {
+	ev := os.Getenv("GOPROXY")
+	if len(ev) == 0 {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		defer cancel()
+		cmd := exec.CommandContext(ctx, "go", "env", "GOPROXY")
+		bs, err := cmd.Output()
+		if err == nil {
+			ev = string(bs)
+		}
+	}
+	ev = strings.TrimSpace(ev)
+	if len(ev) == 0 {
+		return defaultGoProxy
+	}
+	ss := strings.Split(ev, ",")
+	for _, s := range ss {
+		s = strings.TrimSpace(s)
+		if strings.HasPrefix(s, "http") {
+			return s
+		}
+	}
+	return defaultGoProxy
+}
+
 func (m *GoProxy) query(ctx context.Context, api string) ([]byte, error) {
-	if len(m.Proxy) == 0 {
-		return nil, errors.New("empty proxy")
+	proxy := m.getProxy()
+	if len(proxy) == 0 {
+		return nil, errors.New("empty GoProxy")
 	}
 	var b strings.Builder
-	b.WriteString(m.Proxy)
+	b.WriteString(proxy)
 	if !strings.HasSuffix(m.Proxy, "/") {
 		b.WriteString("/")
 	}
@@ -104,7 +142,7 @@ func (m *GoProxy) VersionFiles(ctx context.Context, version string) ([]fs.DirEnt
 	var result []fs.DirEntry
 	for _, zf := range zr.File {
 		name := zf.Name[len(prefix):]
-		if name == "" {
+		if len(name) == 0 {
 			continue
 		}
 		isDir := strings.HasSuffix(name, "/")
@@ -131,8 +169,8 @@ func (m *GoProxy) Latest(ctx context.Context) (*Info, error) {
 var _ fs.DirEntry = (*zipDirEntry)(nil)
 
 type zipDirEntry struct {
-	name string
 	zf   *zip.File
+	name string
 }
 
 func (z *zipDirEntry) Name() string {

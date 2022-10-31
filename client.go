@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	modzip "golang.org/x/mod/zip"
@@ -62,7 +61,7 @@ func checkResponse(resp *http.Response) error {
 	}
 
 	if resp.ContentLength == -1 {
-		resp.Body = ioutil.NopCloser(io.LimitReader(resp.Body, modzip.MaxZipFile))
+		resp.Body = io.NopCloser(io.LimitReader(resp.Body, modzip.MaxZipFile))
 	}
 	return nil
 }
