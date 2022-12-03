@@ -17,6 +17,8 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/fsgo/cmdutil/gosdk"
 )
 
 var defaultUA = "fsgo/gomodule"
@@ -50,7 +52,8 @@ func goProxyFromEnv() string {
 	if len(ev) == 0 {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
-		cmd := exec.CommandContext(ctx, "go", "env", "GOPROXY")
+		goBin := gosdk.LatestOrDefault()
+		cmd := exec.CommandContext(ctx, goBin, "env", "GOPROXY")
 		bs, err := cmd.Output()
 		if err == nil {
 			ev = string(bs)

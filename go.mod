@@ -3,8 +3,9 @@ module github.com/fsgo/gomodule
 go 1.19
 
 require (
+	github.com/fsgo/cmdutil v0.0.2
 	github.com/stretchr/testify v1.8.1
-	golang.org/x/mod v0.6.0
+	golang.org/x/mod v0.7.0
 )
 
 require (
