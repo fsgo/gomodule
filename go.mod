@@ -3,7 +3,7 @@ module github.com/fsgo/gomodule
 go 1.20
 
 require (
-	github.com/fsgo/cmdutil v0.0.2
+	github.com/fsgo/cmdutil v0.0.3
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/mod v0.12.0
 )
