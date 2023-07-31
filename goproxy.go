@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/fsgo/cmdutil/gosdk"
+	"golang.org/x/mod/module"
 )
 
 var defaultUA = "fsgo/gomodule"
@@ -78,12 +79,17 @@ func (m *GoProxy) query(ctx context.Context, api string) ([]byte, error) {
 	if len(proxy) == 0 {
 		return nil, errors.New("empty GoProxy")
 	}
+
+	enc, err := module.EscapePath(m.Module)
+	if err != nil {
+		return nil, err
+	}
 	var b strings.Builder
 	b.WriteString(proxy)
 	if !strings.HasSuffix(m.Proxy, "/") {
 		b.WriteString("/")
 	}
-	b.WriteString(m.Module)
+	b.WriteString(enc)
 	b.WriteString(api)
 
 	return sentRequest(ctx, m.client(), http.MethodGet, b.String())
