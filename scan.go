@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"golang.org/x/mod/modfile"
 )
@@ -43,4 +44,41 @@ func ScanGoModFile(fromDir string, fn func(dir string, mod modfile.File) error) 
 		return fn(filepath.Dir(path), *f)
 	}
 	return filepath.Walk(fromDir, scan)
+}
+
+func ScanGoModFileParallel(fromDir string, conc int, fn func(dir string, mod modfile.File) error) error {
+	if conc <= 1 {
+		return ScanGoModFile(fromDir, fn)
+	}
+	limiter := make(chan struct{}, conc)
+	var wg sync.WaitGroup
+	var fnErr error
+	var mux sync.Mutex
+	err := ScanGoModFile(fromDir, func(dir string, mod modfile.File) error {
+		limiter <- struct{}{}
+		wg.Add(1)
+		go func() {
+			defer func() {
+				<-limiter
+				wg.Done()
+			}()
+			if err1 := fn(dir, mod); err1 != nil {
+				mux.Lock()
+				fnErr = err1
+				mux.Unlock()
+			}
+		}()
+		mux.Lock()
+		err2 := fnErr
+		mux.Unlock()
+		return err2
+	})
+	wg.Wait()
+	if err != nil {
+		return err
+	}
+	mux.Lock()
+	err2 := fnErr
+	mux.Unlock()
+	return err2
 }
