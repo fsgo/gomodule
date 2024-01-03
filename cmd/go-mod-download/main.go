@@ -19,7 +19,6 @@ import (
 )
 
 var input = flag.String("f", "modules.txt", "module list file path")
-
 var outDir = flag.String("d", "./modules_download", "output dir")
 
 func main() {
