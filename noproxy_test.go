@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/fsgo/fst"
 )
 
 func TestIsNoGoProxy(t *testing.T) {
@@ -17,27 +17,27 @@ func TestIsNoGoProxy(t *testing.T) {
 	t.Run("case 1", func(t *testing.T) {
 		t.Setenv("GONOPROXY", "other")
 		got, e1 := IsNoGoProxy(path)
-		require.NoError(t, e1)
-		require.False(t, got)
+		fst.NoError(t, e1)
+		fst.False(t, got)
 
 		got, e1 = IsNoGoProxy("other/hello")
-		require.NoError(t, e1)
-		require.True(t, got)
+		fst.NoError(t, e1)
+		fst.True(t, got)
 	})
 
 	t.Run("case 1", func(t *testing.T) {
 		goNoProxyOnce = sync.Once{}
 		t.Setenv("GONOPROXY", "github.com*,example.com*")
 		got, e1 := IsNoGoProxy(path)
-		require.NoError(t, e1)
-		require.True(t, got)
+		fst.NoError(t, e1)
+		fst.True(t, got)
 
 		got, e1 = IsNoGoProxy("other/hello")
-		require.NoError(t, e1)
-		require.False(t, got)
+		fst.NoError(t, e1)
+		fst.False(t, got)
 
 		got, e1 = IsNoGoProxy("example.com/abc")
-		require.NoError(t, e1)
-		require.True(t, got)
+		fst.NoError(t, e1)
+		fst.True(t, got)
 	})
 }

@@ -7,16 +7,16 @@ package gomodule
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/fsgo/fst"
 )
 
 func Test_goProxyFromEnv(t *testing.T) {
 	t.Run("invalid env", func(t *testing.T) {
 		t.Setenv("GOPROXY", "abcd")
-		require.Equal(t, defaultGoProxy, goProxyFromEnv())
+		fst.Equal(t, defaultGoProxy, goProxyFromEnv())
 	})
 	t.Run("with env", func(t *testing.T) {
 		t.Setenv("GOPROXY", "http://abcd")
-		require.Equal(t, "http://abcd", goProxyFromEnv())
+		fst.Equal(t, "http://abcd", goProxyFromEnv())
 	})
 }
