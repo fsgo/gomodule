@@ -41,7 +41,7 @@ func main() {
 	// 	fmt.Println("VersionZip.err=",err)
 	// }else{
 	// 	for _,f:=range zr.File{
-	// 		fmt.Println(f.Name)
+	// 		fmt.Println(f.Ext)
 	// 	}
 	// }
 

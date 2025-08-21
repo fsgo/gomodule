@@ -53,7 +53,7 @@ func goProxyFromEnv() string {
 	if len(ev) == 0 {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
-		goBin := gosdk.LatestOrDefault()
+		goBin := gosdk.LatestOrDefault(ctx)
 		cmd := exec.CommandContext(ctx, goBin, "env", "GOPROXY")
 		bs, err := cmd.Output()
 		if err == nil {

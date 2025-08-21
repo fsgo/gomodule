@@ -35,7 +35,7 @@ func IsNoGoProxy(path string) (bool, error) {
 func loadNoProxy() (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	goBin := gosdk.LatestOrDefault()
+	goBin := gosdk.LatestOrDefault(ctx)
 	cmd := exec.CommandContext(ctx, goBin, "env", "GONOPROXY")
 	bs, err := cmd.Output()
 	if err != nil {
